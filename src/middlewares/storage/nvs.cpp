@@ -16,12 +16,13 @@ storage::NVS::~NVS()
 
 bool storage::NVS::init(const char *name)
 {
-    if (!this->is_init)
-    {
-        this->is_init = true;
-        this->pref = new Preferences();
-        this->mtx = xSemaphoreCreateMutex();
-    }
+    if (this->is_init)
+        return true;
+
+    this->is_init = true;
+    this->mtx = xSemaphoreCreateMutex();
+    this->pref = new Preferences();
+
     return this->pref->begin(name);
 }
 

@@ -1,7 +1,6 @@
 #ifndef __STORAGE_NVS_H
 #define __STORAGE_NVS_H
 
-#include <Arduino.h>
 #include <Preferences.h>
 #include "guard.h"
 
