@@ -84,6 +84,11 @@ namespace thread
          */
         void stop();
 
+        /**
+         *
+         */
+        static void waitForever();
+
     protected:
         /**
          * @brief User-defined setup code, executed once when the task starts.
