@@ -126,6 +126,11 @@ namespace thread
         virtual void onStopped();
 
         /**
+         * @brief Method for user to exit the thread from inside the thread.
+         */
+        void exit();
+
+        /**
          * @brief Logs an informational message with a timestamp and thread name.
          * @param format The format string, followed by a variable number of arguments.
          */

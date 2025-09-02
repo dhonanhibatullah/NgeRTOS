@@ -136,6 +136,11 @@ void thread::Thread::onStopped()
 {
 }
 
+void thread::Thread::exit()
+{
+    this->setRunning(false);
+}
+
 bool thread::Thread::setHooker(Hooker &hooker, bool block)
 {
     if (hooker.link(this->handler))
@@ -348,11 +353,11 @@ void thread::Thread::task(void *pvParameter)
     Thread *self = (Thread *)pvParameter;
     uint32_t hook_code;
 
-    self->setup();
     self->setRunning(true);
     xSemaphoreGive(self->start_sync);
     vTaskDelay(self->post_setup_sleep_tick);
 
+    self->setup();
     while (self->getRunning())
     {
         if (self->getHooked())
