@@ -85,7 +85,7 @@ namespace thread
         void stop();
 
         /**
-         *
+         * @brief Blocks lines after this function to let the threads run.
          */
         static void block();
 
