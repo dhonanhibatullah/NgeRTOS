@@ -87,7 +87,7 @@ namespace thread
         /**
          *
          */
-        static void waitForever();
+        static void block();
 
     protected:
         /**

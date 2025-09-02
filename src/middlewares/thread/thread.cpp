@@ -120,7 +120,7 @@ void thread::Thread::stop()
     this->onStopped();
 }
 
-void thread::Thread::waitForever()
+void thread::Thread::block()
 {
     while (1)
         vTaskDelay(portMAX_DELAY);

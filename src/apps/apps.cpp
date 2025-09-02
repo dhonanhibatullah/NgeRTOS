@@ -4,5 +4,5 @@ void apps::run()
 {
     core::Thread core;
     core.start();
-    thread::Thread::waitForever();
+    thread::Thread::block();
 }
