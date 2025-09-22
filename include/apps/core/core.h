@@ -3,9 +3,7 @@
 
 #include "config.h"
 #include "middlewares/thread/thread.h"
-#include "apps/storage/storage.h"
 #include "apps/shared/shared.h"
-#include "apps/shared/utils/storage.h"
 
 namespace core
 {
@@ -21,12 +19,8 @@ namespace core
         void setup() override;
         void loop() override;
         void onHooked(uint32_t code) override;
-        void onSuspended() override;
-        void onResumed() override;
-        void onStopped() override;
 
     private:
-        storage::Thread storage_th;
     };
 }
 

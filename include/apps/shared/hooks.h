@@ -6,8 +6,6 @@
 namespace shared
 {
     extern thread::Hooker core_hook;
-    extern thread::Hooker storage_hook;
-    extern thread::Hooker web_hook;
 }
 
 #endif

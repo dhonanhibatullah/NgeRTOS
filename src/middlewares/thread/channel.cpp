@@ -34,12 +34,12 @@ QueueHandle_t thread::ChannelBind::getQueueHandle()
     return this->queue;
 }
 
-bool thread::ChannelBind::receive(void *data, TickType_t timeout)
+bool thread::ChannelBind::receive(void *buf, TickType_t timeout)
 {
-    if (data == nullptr || this->queue == NULL)
+    if (buf == nullptr || this->queue == NULL)
         return false;
 
-    return (bool)(xQueueReceive(this->queue, data, timeout) == pdTRUE);
+    return (bool)(xQueueReceive(this->queue, buf, timeout) == pdTRUE);
 }
 
 thread::Channel::Channel(
@@ -131,10 +131,13 @@ void thread::Channel::trigger(void *data)
     {
         if (this->slots[i].occupied)
         {
-            if (this->slots[i].force)
-                xQueueOverwrite(this->slots[i].queue, data);
-            else
+            if ((xQueueSend(this->slots[i].queue, data, 0) != pdTRUE) && this->slots[i].force)
+            {
+                void *tmp = malloc(this->item_size);
+                xQueueReceive(this->slots[i].queue, tmp, 0);
                 xQueueSend(this->slots[i].queue, data, 0);
+                free(tmp);
+            }
         }
     }
 }

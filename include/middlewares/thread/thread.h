@@ -28,7 +28,7 @@ namespace thread
          * @param priority The priority of the task (higher number means higher priority).
          * @param sleep_tick The delay in ticks to wait at the end of each `loop()` iteration.
          */
-        Thread(String name, uint32_t stack_size, UBaseType_t priority, TickType_t sleep_tick, TickType_t post_setup_sleep_tick = 200);
+        Thread(String name, uint32_t stack_size, UBaseType_t priority, TickType_t sleep_tick, TickType_t post_setup_sleep_tick = 1000);
 
         /// @brief The `Thread` class destructor.
         virtual ~Thread();
@@ -85,7 +85,7 @@ namespace thread
         void stop();
 
         /**
-         * @brief Blocks lines after this function to let the threads run.
+         * @brief Blocks any proceeding lines to let the threads run.
          */
         static void block();
 
@@ -190,7 +190,7 @@ namespace thread
         SemaphoreHandle_t mtx;
 
         /// @brief A mutex to protect logging.
-        SemaphoreHandle_t log_mtx;
+        static SemaphoreHandle_t log_mtx;
 
         /// @brief A binary to ensure the task is actually started.
         SemaphoreHandle_t start_sync;
@@ -199,7 +199,7 @@ namespace thread
         SemaphoreHandle_t stop_sync;
 
         /// @brief Flag to initiate the serial once.
-        static volatile bool serial_init;
+        static volatile bool log_init;
 
         /// @brief The running state flag.
         bool running;

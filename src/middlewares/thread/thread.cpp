@@ -1,6 +1,7 @@
 #include "middlewares/thread/thread.h"
 
-volatile bool thread::Thread::serial_init = false;
+volatile bool thread::Thread::log_init = false;
+SemaphoreHandle_t thread::Thread::log_mtx = NULL;
 
 thread::Thread::Thread(
     String name,
@@ -19,28 +20,28 @@ thread::Thread::Thread(
                                         is_init(false),
                                         post_setup_sleep_tick(post_setup_sleep_tick)
 {
-    if (!thread::Thread::serial_init)
-    {
-        thread::Thread::serial_init = true;
-        Serial.begin(115200);
-    }
 }
 
 thread::Thread::~Thread()
 {
     this->stop();
-    vSemaphoreDelete(this->mtx);
     vSemaphoreDelete(this->start_sync);
     vSemaphoreDelete(this->stop_sync);
 }
 
 bool thread::Thread::start()
 {
+    if (!thread::Thread::log_init)
+    {
+        thread::Thread::log_init = true;
+        thread::Thread::log_mtx = xSemaphoreCreateMutex();
+        Serial.begin(115200);
+    }
+
     if (!this->is_init)
     {
         this->is_init = true;
         this->mtx = xSemaphoreCreateMutex();
-        this->log_mtx = xSemaphoreCreateMutex();
         this->start_sync = xSemaphoreCreateBinary();
         this->stop_sync = xSemaphoreCreateBinary();
     }
@@ -66,6 +67,21 @@ bool thread::Thread::start()
 
 bool thread::Thread::start(BaseType_t core_id)
 {
+    if (!thread::Thread::log_init)
+    {
+        thread::Thread::log_init = true;
+        thread::Thread::log_mtx = xSemaphoreCreateMutex();
+        Serial.begin(115200);
+    }
+
+    if (!this->is_init)
+    {
+        this->is_init = true;
+        this->mtx = xSemaphoreCreateMutex();
+        this->start_sync = xSemaphoreCreateBinary();
+        this->stop_sync = xSemaphoreCreateBinary();
+    }
+
     if (this->getRunning())
         return false;
 
@@ -211,7 +227,7 @@ void thread::Thread::logInfo(const char *format, ...)
 #ifdef LOG_INFO_ENABLE
     static const char fmt[] = "%7u.%03u [INFO ] (%s): ";
 
-    thread::Guard ts(this->log_mtx);
+    thread::Guard ts(thread::Thread::log_mtx);
 
     unsigned long now_ts = millis();
     unsigned long sec_ts = now_ts / 1000;
@@ -248,7 +264,7 @@ void thread::Thread::logWarn(const char *format, ...)
 #ifdef LOG_WARN_ENABLE
     static const char fmt[] = "%7u.%03u [WARN ] (%s): ";
 
-    thread::Guard ts(this->log_mtx);
+    thread::Guard ts(thread::Thread::log_mtx);
 
     unsigned long now_ts = millis();
     unsigned long sec_ts = now_ts / 1000;
@@ -285,7 +301,7 @@ void thread::Thread::logError(const char *format, ...)
 #ifdef LOG_ERROR_ENABLE
     static const char fmt[] = "%7u.%03u [ERROR] (%s): ";
 
-    thread::Guard ts(this->log_mtx);
+    thread::Guard ts(thread::Thread::log_mtx);
 
     unsigned long now_ts = millis();
     unsigned long sec_ts = now_ts / 1000;
@@ -322,7 +338,7 @@ void thread::Thread::logDebug(const char *format, ...)
 #ifdef LOG_DEBUG_ENABLE
     static const char fmt[] = "%7u.%03u [DEBUG] (%s): ";
 
-    thread::Guard ts(this->log_mtx);
+    thread::Guard ts(thread::Thread::log_mtx);
 
     unsigned long now_ts = millis();
     unsigned long sec_ts = now_ts / 1000;
@@ -361,9 +377,10 @@ void thread::Thread::task(void *pvParameter)
 
     self->setRunning(true);
     xSemaphoreGive(self->start_sync);
-    vTaskDelay(self->post_setup_sleep_tick);
 
     self->setup();
+    vTaskDelay(self->post_setup_sleep_tick);
+
     while (self->getRunning())
     {
         if (self->getHooked())
